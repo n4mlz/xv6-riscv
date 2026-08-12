@@ -10,5 +10,6 @@ extern void *memset(void *dst, int c, uint n);
 extern int strlen(const char *s);
 extern int strncmp(const char *p, const char *q, uint n);
 extern char *strncpy(char *s, const char *t, int n);
+extern char *strrchr(const char *cp, int ch);
 
 #endif

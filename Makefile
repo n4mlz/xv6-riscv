@@ -37,11 +37,13 @@ OBJS = \
   $N/util.o \
   $N/net.o \
   $N/ether.o \
+  $N/ip.o \
   $P/platform.o \
   $P/intr.o \
   $P/driver/virtio_net.o \
   $L/stdio.o \
-  $L/stdlib.o
+  $L/stdlib.o \
+  $L/string.o
 
 # riscv64-unknown-elf- or riscv64-linux-gnu-
 # perhaps in /opt/riscv/bin

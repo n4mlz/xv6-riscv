@@ -369,6 +369,8 @@ static struct net_device_ops virtio_net_ops = {
   .output = virtio_net_output,
 };
 
+#include "ip.h"
+
 struct net_device *
 virtio_net_init(void)
 {
@@ -453,6 +455,13 @@ virtio_net_init(void)
       -1) {
     errorf("intr_register() failure");
     return NULL;
+  }
+  /* TODO: Temporary */
+  {
+    struct ip_iface *iface = ip_iface_alloc("192.0.2.2", "255.255.255.0");
+    if (iface) {
+      ip_iface_register(dev, iface);
+    }
   }
   return dev;
 }
