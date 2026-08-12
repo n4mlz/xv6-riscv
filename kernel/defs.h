@@ -200,6 +200,9 @@ void            virtio_disk_intr(void);
 int             net_init(void);
 int             net_run(void);
 
+// net/platform/xv6-riscv/intr.c
+void            intr_dispatch(unsigned int);
+
 // net/platform/xv6-riscv/driver/virtio_net.c
 struct net_device* virtio_net_init(void);
 
