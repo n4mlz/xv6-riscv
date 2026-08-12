@@ -213,6 +213,10 @@ devintr()
       plic_complete(irq);
 
     return 1;
+  } else if (scause == 0x8000000000000001L) {
+    // software interrupt.
+    intr_soft_dispatch();
+    return 1;
   } else if (scause == 0x8000000000000005L) {
     // timer interrupt.
     clockintr();

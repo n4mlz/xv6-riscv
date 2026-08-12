@@ -202,6 +202,7 @@ int             net_run(void);
 
 // net/platform/xv6-riscv/intr.c
 void            intr_dispatch(unsigned int);
+void            intr_soft_dispatch(void);
 
 // net/platform/xv6-riscv/driver/virtio_net.c
 struct net_device* virtio_net_init(void);

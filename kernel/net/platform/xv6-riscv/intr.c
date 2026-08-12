@@ -18,6 +18,9 @@ struct irq_entry {
  */
 static struct irq_entry *irqs;
 
+static lock_t pendinglock = LOCK_INITIALIZER;
+static uint64_t pending;
+
 int
 intr_register(unsigned int irq, intr_isr_t isr, int flags, void *arg)
 {
@@ -46,9 +49,16 @@ intr_register(unsigned int irq, intr_isr_t isr, int flags, void *arg)
   return 0;
 }
 
+/*
+ * NOTE: only accepts soft IRQs (single bit value out of PLIC source range)
+ */
 int
 intr_raise(unsigned int irq)
 {
+  lock_acquire(&pendinglock);
+  pending |= irq;
+  lock_release(&pendinglock);
+  w_sip(r_sip() | SIP_SSIP);
   return 0;
 }
 
@@ -63,6 +73,31 @@ intr_dispatch(unsigned int irq)
   for (entry = irqs; entry; entry = entry->next) {
     if (entry->irq == irq) {
       entry->isr(entry->irq, entry->arg);
+    }
+  }
+}
+
+/*
+ * NOTE: called from devintr() in kernel/trap.c
+ */
+void
+intr_soft_dispatch(void)
+{
+  uint64_t irqs, irq;
+
+  // clear SSIP before taking the pending snapshot, so that an irq
+  // raised while the ISRs run re-triggers the software interrupt.
+  w_sip(r_sip() & ~SIP_SSIP);
+
+  lock_acquire(&pendinglock);
+  irqs = pending;
+  pending = 0;
+  lock_release(&pendinglock);
+
+  for (irq = 1; irqs; irq <<= 1) {
+    if (irqs & irq) {
+      intr_dispatch(irq);
+      irqs &= ~irq;
     }
   }
 }
