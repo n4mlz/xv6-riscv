@@ -8,6 +8,11 @@ struct timeval {
   long tv_usec;
 };
 
+struct timespec {
+  long tv_sec;
+  long tv_nsec;
+};
+
 struct tm {
   int tm_sec;   // 0-60
   int tm_min;   // 0-59

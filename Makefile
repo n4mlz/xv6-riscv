@@ -40,9 +40,11 @@ OBJS = \
   $N/ip.o \
   $N/arp.o \
   $N/icmp.o \
+  $N/udp.o \
   $P/platform.o \
   $P/intr.o \
   $P/timer.o \
+  $P/sched.o \
   $P/driver/virtio_net.o \
   $L/stdio.o \
   $L/stdlib.o \

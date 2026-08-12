@@ -38,5 +38,6 @@ extern uint16_t random16(void);
 
 #include "intr.h"
 #include "timer.h"
+#include "sched.h"
 
 #endif
