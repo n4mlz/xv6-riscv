@@ -39,6 +39,7 @@ OBJS = \
   $N/ether.o \
   $P/platform.o \
   $P/intr.o \
+  $P/driver/virtio_net.o \
   $L/stdio.o \
   $L/stdlib.o
 
@@ -162,12 +163,12 @@ UPROGS=\
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
 
--include $K/*.d $U/*.d $N/*.d $P/*.d $L/*.d
+-include $K/*.d $U/*.d $N/*.d $P/*.d $P/driver/*.d $L/*.d
 
 clean: 
 	rm -f *.tex *.dvi *.idx *.aux *.log *.ind *.ilg \
 	*/*.o */*.d */*.asm */*.sym \
-	$N/*.o $N/*.d $P/*.o $P/*.d $L/*.o $L/*.d \
+	$N/*.o $N/*.d $P/*.o $P/*.d $P/driver/*.o $P/driver/*.d $L/*.o $L/*.d \
 	$K/kernel fs.img \
 	mkfs/mkfs .gdbinit \
         $U/usys.S \
@@ -183,12 +184,27 @@ ifndef CPUS
 CPUS := 3
 endif
 
+TAPDEV=tap0
+TAPADDR=192.0.2.1/24
+
 QEMUOPTS = -machine virt -bios none -kernel $K/kernel -m 128M -smp $(CPUS) -nographic
 QEMUOPTS += -global virtio-mmio.force-legacy=false
 QEMUOPTS += -drive file=fs.img,if=none,format=raw,id=x0
 QEMUOPTS += -device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0
 
-qemu: check-qemu-version $K/kernel fs.img
+QEMUOPTS += -netdev tap,ifname=$(TAPDEV),id=en0,script=no,downscript=no
+QEMUOPTS += -device virtio-net-device,netdev=en0,csum=off,gso=off,guest_csum=off,bus=virtio-mmio-bus.1
+
+tap:
+	@ip addr show $(TAPDEV) 2>/dev/null || (echo "Create '$(TAPDEV)'"; \
+		sudo ip tuntap add mode tap user $(USER) name $(TAPDEV); \
+		sudo sysctl -w net.ipv6.conf.$(TAPDEV).disable_ipv6=1; \
+		sudo ip addr add $(TAPADDR) dev $(TAPDEV); \
+		sudo ip link set $(TAPDEV) up; \
+		ip addr show $(TAPDEV); \
+	)
+
+qemu: check-qemu-version $K/kernel fs.img tap
 	$(QEMU) $(QEMUOPTS)
 
 .gdbinit: .gdbinit.tmpl-riscv

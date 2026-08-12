@@ -9,6 +9,7 @@ struct spinlock;
 struct sleeplock;
 struct stat;
 struct superblock;
+struct net_device;
 struct timeval;
 struct tm;
 
@@ -198,6 +199,9 @@ void            virtio_disk_intr(void);
 // net/net.c
 int             net_init(void);
 int             net_run(void);
+
+// net/platform/xv6-riscv/driver/virtio_net.c
+struct net_device* virtio_net_init(void);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x) / sizeof((x)[0]))
