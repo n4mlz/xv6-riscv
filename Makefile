@@ -41,6 +41,7 @@ OBJS = \
   $N/arp.o \
   $N/icmp.o \
   $N/udp.o \
+  $N/tcp.o \
   $P/platform.o \
   $P/intr.o \
   $P/timer.o \

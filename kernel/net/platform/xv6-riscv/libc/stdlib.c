@@ -46,3 +46,19 @@ strtol(const char *s, char **endptr, int base)
     *endptr = (char *)s;
   return (neg ? -val : val);
 }
+
+static unsigned int seed = 1;
+
+void
+srand(unsigned int newseed)
+{
+  seed = newseed;
+}
+
+long
+random(void)
+{
+  /* Linear Congruential Generator (LCG) */
+  seed = (seed * 1103515245 + 12345) % 0x7fffffff;
+  return seed;
+}
