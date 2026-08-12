@@ -10,6 +10,7 @@ struct sleeplock;
 struct stat;
 struct superblock;
 struct net_device;
+struct sockaddr;
 struct timeval;
 struct tm;
 
@@ -137,6 +138,10 @@ int             strlen(const char*);
 int             strncmp(const char*, const char*, uint);
 char*           strncpy(char*, const char*, int);
 
+// sysfile.c
+int             argfd(int, int*, struct file**);
+int             fdalloc(struct file*);
+
 // syscall.c
 void            argint(int, int*);
 int             argstr(int, char*, int);
@@ -199,6 +204,13 @@ void            virtio_disk_intr(void);
 // net/net.c
 int             net_init(void);
 int             net_run(void);
+
+// net/sock.c
+int             sock_open(int, int, int);
+int             sock_close(int);
+ssize_t         sock_recvfrom(int, void*, size_t, struct sockaddr*, int*);
+ssize_t         sock_sendto(int, const void*, size_t, const struct sockaddr*, int);
+int             sock_bind(int, const struct sockaddr*, int);
 
 // net/platform/xv6-riscv/intr.c
 void            intr_dispatch(unsigned int);

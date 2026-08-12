@@ -12,6 +12,7 @@
 #include "file.h"
 #include "stat.h"
 #include "proc.h"
+#include "net/sock.h"
 
 struct devsw devsw[NDEV];
 struct {
@@ -79,6 +80,8 @@ fileclose(struct file *f)
     begin_op();
     iput(ff.ip);
     end_op();
+  } else if (ff.type == FD_SOCKET) {
+    sock_close(ff.sock);
   }
 }
 

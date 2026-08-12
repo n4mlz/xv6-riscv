@@ -160,3 +160,52 @@ sbrklazy(int n)
 {
   return sys_sbrk(n, SBRK_LAZY);
 }
+
+//
+// byte order
+//
+
+static int
+byteorder(void)
+{
+  uint x = 1;
+
+  return *(uchar *)&x ? 1 : 0; // 1 if little endian
+}
+
+static ushort
+byteswap16(ushort v)
+{
+  return (v & 0x00ff) << 8 | (v & 0xff00) >> 8;
+}
+
+static uint
+byteswap32(uint v)
+{
+  return (v & 0x000000ff) << 24 | (v & 0x0000ff00) << 8 |
+         (v & 0x00ff0000) >> 8 | (v & 0xff000000) >> 24;
+}
+
+ushort
+htons(ushort h)
+{
+  return byteorder() ? byteswap16(h) : h;
+}
+
+ushort
+ntohs(ushort n)
+{
+  return byteorder() ? byteswap16(n) : n;
+}
+
+uint
+htonl(uint h)
+{
+  return byteorder() ? byteswap32(h) : h;
+}
+
+uint
+ntohl(uint n)
+{
+  return byteorder() ? byteswap32(n) : n;
+}

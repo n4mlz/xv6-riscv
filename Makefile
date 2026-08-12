@@ -29,6 +29,7 @@ OBJS = \
   $K/pipe.o \
   $K/exec.o \
   $K/sysfile.o \
+  $K/syssocket.o \
   $K/kernelvec.o \
   $K/plic.o \
   $K/rtc.o \
@@ -42,6 +43,7 @@ OBJS = \
   $N/icmp.o \
   $N/udp.o \
   $N/tcp.o \
+  $N/sock.o \
   $P/platform.o \
   $P/intr.o \
   $P/timer.o \
@@ -167,6 +169,7 @@ UPROGS=\
 	$U/_forphan\
 	$U/_dorphan\
 	$U/_sync\
+	$U/_udpecho\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)

@@ -1,6 +1,7 @@
 #define SBRK_ERROR ((char *)-1)
 
 struct stat;
+struct sockaddr;
 
 // system calls
 int fork(void);
@@ -25,6 +26,10 @@ char *sys_sbrk(int, int);
 int pause(int);
 int uptime(void);
 int sync(void);
+int socket(int, int, int);
+int bind(int, const struct sockaddr *, int);
+int recvfrom(int, void *, int, struct sockaddr *, int *);
+int sendto(int, const void *, int, const struct sockaddr *, int);
 
 // ulib.c
 int stat(const char *, struct stat *);
@@ -40,6 +45,10 @@ int memcmp(const void *, const void *, uint);
 void *memcpy(void *, const void *, uint);
 char *sbrk(int);
 char *sbrklazy(int);
+ushort htons(ushort);
+ushort ntohs(ushort);
+uint htonl(uint);
+uint ntohl(uint);
 
 // printf.c
 void fprintf(int, const char *, ...) __attribute__((format(printf, 2, 3)));
