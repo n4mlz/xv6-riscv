@@ -1,3 +1,8 @@
+#ifndef TIME_H
+#define TIME_H
+
+#include "types.h"
+
 struct timeval {
   long tv_sec;
   long tv_usec;
@@ -14,3 +19,11 @@ struct tm {
   int tm_yday;  // 0-365
   int tm_isdst; // zero
 };
+
+extern time_t time(time_t *);
+extern int gettimeofday(struct timeval *, void *);
+extern time_t mktime(struct tm *);
+extern struct tm *localtime_r(const time_t *, struct tm *);
+extern size_t strftime(char *, size_t, const char *, const struct tm *);
+
+#endif

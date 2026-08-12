@@ -1,5 +1,8 @@
 K=kernel
 U=user
+N=$K/net
+P=$N/platform/xv6-riscv
+L=$P/libc
 
 OBJS = \
   $K/entry.o \
@@ -30,7 +33,10 @@ OBJS = \
   $K/plic.o \
   $K/rtc.o \
   $K/time.o \
-  $K/virtio_disk.o
+  $K/virtio_disk.o \
+  $N/util.o \
+  $N/net.o \
+  $L/stdio.o
 
 # riscv64-unknown-elf- or riscv64-linux-gnu-
 # perhaps in /opt/riscv/bin
@@ -75,7 +81,7 @@ CFLAGS += -fno-builtin-strchr -fno-builtin-exit -fno-builtin-malloc -fno-builtin
 CFLAGS += -fno-builtin-free
 CFLAGS += -fno-builtin-memcpy -Wno-main
 CFLAGS += -fno-builtin-printf -fno-builtin-fprintf -fno-builtin-vprintf
-CFLAGS += -I.
+CFLAGS += -I. -I $K -I $N -I $P -I $L -DHEXDUMP
 CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
 
 # Disable PIE when possible (for Ubuntu 16.10 toolchain)
@@ -152,11 +158,12 @@ UPROGS=\
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
 
--include kernel/*.d user/*.d
+-include $K/*.d $U/*.d $N/*.d $P/*.d $L/*.d
 
 clean: 
 	rm -f *.tex *.dvi *.idx *.aux *.log *.ind *.ilg \
 	*/*.o */*.d */*.asm */*.sym \
+	$N/*.o $N/*.d $P/*.o $P/*.d $L/*.o $L/*.d \
 	$K/kernel fs.img \
 	mkfs/mkfs .gdbinit \
         $U/usys.S \

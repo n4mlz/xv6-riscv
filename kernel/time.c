@@ -106,3 +106,11 @@ localtime_r(const time_t *timep, struct tm *result)
   result->tm_isdst = 0;
   return result;
 }
+
+size_t
+strftime(char *s, size_t max, const char *format, const struct tm *tm)
+{
+  (void)format; /* only supports "%T" */
+  return snprintf(s, max, "%02d:%02d:%02d", tm->tm_hour, tm->tm_min,
+                  tm->tm_sec);
+}
