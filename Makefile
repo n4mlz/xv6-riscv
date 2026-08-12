@@ -39,6 +39,7 @@ OBJS = \
   $N/ether.o \
   $N/ip.o \
   $N/arp.o \
+  $N/icmp.o \
   $P/platform.o \
   $P/intr.o \
   $P/timer.o \
