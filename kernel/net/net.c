@@ -268,7 +268,7 @@ net_softirq_handler(unsigned int irq, void *arg)
   }
 }
 
-// #include "arp.h"
+#include "arp.h"
 #include "ip.h"
 // #include "icmp.h"
 // #include "udp.h"
@@ -282,10 +282,10 @@ net_init(void)
     errorf("platform_init() failure");
     return -1;
   }
-  //   if (arp_init() == -1) {
-  //     errorf("arp_init() failure");
-  //     return -1;
-  //   }
+  if (arp_init() == -1) {
+    errorf("arp_init() failure");
+    return -1;
+  }
   if (ip_init() == -1) {
     errorf("ip_init() failure");
     return -1;

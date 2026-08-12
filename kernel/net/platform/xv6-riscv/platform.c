@@ -13,6 +13,9 @@ platform_init(void)
     return -1;
   }
   intr_register(INTR_IRQ_SOFT, net_softirq_handler, 0, NULL);
+  if (timer_init() == -1) {
+    return -1;
+  }
   return 0;
 }
 
@@ -20,6 +23,9 @@ int
 platform_run(void)
 {
   if (intr_run() == -1) {
+    return -1;
+  }
+  if (timer_run() == -1) {
     return -1;
   }
   return 0;

@@ -37,5 +37,6 @@ extern int lock_release(lock_t *lock);
 extern uint16_t random16(void);
 
 #include "intr.h"
+#include "timer.h"
 
 #endif

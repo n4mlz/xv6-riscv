@@ -38,8 +38,10 @@ OBJS = \
   $N/net.o \
   $N/ether.o \
   $N/ip.o \
+  $N/arp.o \
   $P/platform.o \
   $P/intr.o \
+  $P/timer.o \
   $P/driver/virtio_net.o \
   $L/stdio.o \
   $L/stdlib.o \
