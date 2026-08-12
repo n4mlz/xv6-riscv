@@ -3,8 +3,20 @@
 #include "memlayout.h"
 #include "riscv.h"
 #include "defs.h"
+#include "time.h"
 
 volatile static int started = 0;
+
+static void
+printdate()
+{
+  struct timeval tv;
+  struct tm tm;
+  gettimeofday(&tv, NULL);
+  localtime_r(&tv.tv_sec, &tm);
+  printk("%04d/%02d/%02d %02d:%02d:%02d\n", tm.tm_year + 1900, tm.tm_mon + 1,
+         tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+}
 
 // start() jumps here in supervisor mode on all CPUs.
 void
@@ -28,7 +40,8 @@ main()
     iinit();            // inode table
     fileinit();         // file table
     virtio_disk_init(); // emulated hard disk
-    userinit();         // first user process
+    printdate();
+    userinit(); // first user process
 
     __atomic_store_n(&started, 1, __ATOMIC_RELEASE);
   } else {

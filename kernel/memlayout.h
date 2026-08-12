@@ -4,6 +4,7 @@
 // based on qemu's hw/riscv/virt.c:
 //
 // 00001000 -- boot ROM, provided by qemu
+// 00101000 -- RTC
 // 02000000 -- CLINT
 // 0C000000 -- PLIC
 // 10000000 -- uart0
@@ -17,6 +18,9 @@
 // end -- start of kernel page allocation area
 // PHYSTOP -- end RAM used by the kernel
 
+// Goldfish RTC
+#define RTC 0x00101000L
+
 // qemu puts UART registers here in physical memory.
 #define UART0     0x10000000L
 #define UART0_IRQ 10
@@ -26,8 +30,8 @@
 #define VIRTIO0_IRQ 1
 
 // core-local interrupt controller (CLINT)
-#define CLINT_BASE           0x02000000L
-#define CLINT(hart)          (CLINT_BASE + (hart) * 4)
+#define CLINT_BASE  0x02000000L
+#define CLINT(hart) (CLINT_BASE + (hart) * 4)
 
 // qemu puts platform-level interrupt controller (PLIC) here.
 #define PLIC                 0x0c000000L
