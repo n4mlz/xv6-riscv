@@ -75,6 +75,8 @@ int             pipewrite(struct pipe*, uint64, int);
 
 // printk.c
 int             printk(char*, ...) __attribute__ ((format (printf, 1, 2)));
+int             snprintf(char*, size_t, const char*, ...) __attribute__ ((format (printf, 3, 4)));
+int             vsnprintf(char*, size_t, const char*, __builtin_va_list);
 void            panic(char*) __attribute__((noreturn));
 void            printkinit(void);
 

@@ -26,7 +26,8 @@ static struct {
 static char digits[] = "0123456789abcdef";
 
 static void
-printint(long long xx, int base, int sign)
+printint(void (*putch)(int, void *), void *arg, long long xx, int base,
+         int sign, int width, int padc)
 {
   char buf[20];
   int i;
@@ -42,21 +43,93 @@ printint(long long xx, int base, int sign)
     buf[i++] = digits[x % base];
   } while ((x /= base) != 0);
 
-  if (sign)
-    buf[i++] = '-';
+  if (sign && padc == '0')
+    putch('-', arg);
+  for (int w = i + sign; w < width; w++)
+    putch(padc, arg);
+  if (sign && padc != '0')
+    putch('-', arg);
 
   while (--i >= 0)
-    consputc(buf[i]);
+    putch(buf[i], arg);
 }
 
 static void
-printptr(uint64 x)
+printptr(void (*putch)(int, void *), void *arg, uint64 x)
 {
   int i;
-  consputc('0');
-  consputc('x');
+  putch('0', arg);
+  putch('x', arg);
   for (i = 0; i < (sizeof(uint64) * 2); i++, x <<= 4)
-    consputc(digits[x >> (sizeof(uint64) * 8 - 4)]);
+    putch(digits[x >> (sizeof(uint64) * 8 - 4)], arg);
+}
+
+static void
+kvprintf(void (*putch)(int, void *), void *arg, const char *fmt, va_list ap)
+{
+  int i, cx, c0, width, padc, lflag;
+  char *s;
+
+  for (i = 0; (cx = fmt[i] & 0xff) != 0; i++) {
+    if (cx != '%') {
+      putch(cx, arg);
+      continue;
+    }
+    i++;
+    padc = ' ';
+    if ((fmt[i] & 0xff) == '0')
+      padc = '0';
+    width = 0;
+    for (; (c0 = fmt[i] & 0xff) >= '0' && c0 <= '9'; i++)
+      width = width * 10 + c0 - '0';
+    lflag = 0;
+    for (; (c0 = fmt[i] & 0xff) == 'l'; i++)
+      lflag++;
+    if (c0 == 'z') { // size_t is 64-bit
+      lflag = 1;
+      i++;
+      c0 = fmt[i] & 0xff;
+    }
+    if (c0 == 'd') {
+      if (lflag)
+        printint(putch, arg, va_arg(ap, int64_t), 10, 1, width, padc);
+      else
+        printint(putch, arg, va_arg(ap, int), 10, 1, width, padc);
+    } else if (c0 == 'u') {
+      if (lflag)
+        printint(putch, arg, va_arg(ap, uint64), 10, 0, width, padc);
+      else
+        printint(putch, arg, va_arg(ap, uint32), 10, 0, width, padc);
+    } else if (c0 == 'x') {
+      if (lflag)
+        printint(putch, arg, va_arg(ap, uint64), 16, 0, width, padc);
+      else
+        printint(putch, arg, va_arg(ap, uint32), 16, 0, width, padc);
+    } else if (c0 == 'p') {
+      printptr(putch, arg, va_arg(ap, uint64));
+    } else if (c0 == 'c') {
+      putch(va_arg(ap, uint), arg);
+    } else if (c0 == 's') {
+      if ((s = va_arg(ap, char *)) == 0)
+        s = "(null)";
+      for (; *s; s++)
+        putch(*s, arg);
+    } else if (c0 == '%') {
+      putch('%', arg);
+    } else if (c0 == 0) {
+      break;
+    } else {
+      // Print unknown % sequence to draw attention.
+      putch('%', arg);
+      putch(c0, arg);
+    }
+  }
+}
+
+static void
+cons_putch(int c, void *arg)
+{
+  consputc(c);
 }
 
 // Print to the console.
@@ -64,74 +137,62 @@ int
 printk(char *fmt, ...)
 {
   va_list ap;
-  int i, cx, c0, c1, c2;
-  char *s;
 
   if (panicking == 0)
     acquire(&pr.lock);
 
   va_start(ap, fmt);
-  for (i = 0; (cx = fmt[i] & 0xff) != 0; i++) {
-    if (cx != '%') {
-      consputc(cx);
-      continue;
-    }
-    i++;
-    c0 = fmt[i + 0] & 0xff;
-    c1 = c2 = 0;
-    if (c0)
-      c1 = fmt[i + 1] & 0xff;
-    if (c1)
-      c2 = fmt[i + 2] & 0xff;
-    if (c0 == 'd') {
-      printint(va_arg(ap, int), 10, 1);
-    } else if (c0 == 'l' && c1 == 'd') {
-      printint(va_arg(ap, uint64), 10, 1);
-      i += 1;
-    } else if (c0 == 'l' && c1 == 'l' && c2 == 'd') {
-      printint(va_arg(ap, uint64), 10, 1);
-      i += 2;
-    } else if (c0 == 'u') {
-      printint(va_arg(ap, uint32), 10, 0);
-    } else if (c0 == 'l' && c1 == 'u') {
-      printint(va_arg(ap, uint64), 10, 0);
-      i += 1;
-    } else if (c0 == 'l' && c1 == 'l' && c2 == 'u') {
-      printint(va_arg(ap, uint64), 10, 0);
-      i += 2;
-    } else if (c0 == 'x') {
-      printint(va_arg(ap, uint32), 16, 0);
-    } else if (c0 == 'l' && c1 == 'x') {
-      printint(va_arg(ap, uint64), 16, 0);
-      i += 1;
-    } else if (c0 == 'l' && c1 == 'l' && c2 == 'x') {
-      printint(va_arg(ap, uint64), 16, 0);
-      i += 2;
-    } else if (c0 == 'p') {
-      printptr(va_arg(ap, uint64));
-    } else if (c0 == 'c') {
-      consputc(va_arg(ap, uint));
-    } else if (c0 == 's') {
-      if ((s = va_arg(ap, char *)) == 0)
-        s = "(null)";
-      for (; *s; s++)
-        consputc(*s);
-    } else if (c0 == '%') {
-      consputc('%');
-    } else if (c0 == 0) {
-      break;
-    } else {
-      // Print unknown % sequence to draw attention.
-      consputc('%');
-      consputc(c0);
-    }
-  }
+  kvprintf(cons_putch, 0, fmt, ap);
   va_end(ap);
 
   if (panicking == 0)
     release(&pr.lock);
 
   return 0;
+}
+
+struct sprintbuf {
+  char *buf;
+  char *ebuf;
+  int cnt;
+};
+
+static void
+sprint_putch(int c, void *arg)
+{
+  struct sprintbuf *b = arg;
+
+  if (b->buf < b->ebuf)
+    *b->buf++ = c;
+  b->cnt++;
+}
+
+int
+vsnprintf(char *buf, size_t n, const char *fmt, va_list ap)
+{
+  struct sprintbuf b;
+
+  if (n == 0)
+    return 0;
+
+  b = (struct sprintbuf){buf, buf + n - 1, 0};
+  kvprintf(sprint_putch, &b, fmt, ap);
+  *b.buf = '\0';
+
+  return b.cnt;
+}
+
+int
+snprintf(char *buf, size_t n, const char *fmt, ...)
+{
+  va_list ap;
+  int cnt;
+
+  va_start(ap, fmt);
+  cnt = vsnprintf(buf, n, fmt, ap);
+  va_end(ap);
+
+  return cnt;
 }
 
 void
