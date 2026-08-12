@@ -36,6 +36,8 @@ OBJS = \
   $K/virtio_disk.o \
   $N/util.o \
   $N/net.o \
+  $P/platform.o \
+  $P/intr.o \
   $L/stdio.o
 
 # riscv64-unknown-elf- or riscv64-linux-gnu-

@@ -42,6 +42,7 @@ main()
     virtio_disk_init(); // emulated hard disk
     printdate();
     net_init(); // network stack
+    net_run();  // start networking
     userinit(); // first user process
 
     __atomic_store_n(&started, 1, __ATOMIC_RELEASE);
